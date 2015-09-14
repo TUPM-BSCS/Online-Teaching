@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use DB;
 use Illuminate\Database\Eloquent\Collection;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
@@ -88,7 +88,7 @@ class MainAdminController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request, $field)
+    public function update(Request $request)
     {
         //
     }
@@ -157,7 +157,25 @@ class MainAdminController extends Controller
                 $user->password = bcrypt($request->input('new_password'));
                 $user->save();
                 return redirect('main_admin/settings')->with('status', 'Password changed.');
-            }            
+            }    
+                    
         }
+        
+    }
+    
+    
+    public function accept(Request $request)
+    {
+        $user = User::where('id', $request->input('inst_id'))->first();
+        $user->is_verified = true;
+        $user->save();
+        return redirect('main_admin/institutions_pending');
+    }
+    
+    public function decline(Request $request)
+    {
+        $user = User::find($request->input('inst_id'));
+        $user->delete();
+        return redirect('main_admin/institutions_pending');
     }
 }

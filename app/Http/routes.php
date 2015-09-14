@@ -20,6 +20,8 @@ Route::resource('main_admin', 'MainAdminController');
 Route::resource('institution', 'InstitutionController');
 
 Route::post('main_admin/change/{field}', 'MainAdminController@change');
+Route::post('main_admin/accept', 'MainAdminController@accept');
+Route::post('main_admin/decline', 'MainAdminController@decline');
 
 // Authentication routes...
 Route::get('auth/login/{id}', 'Auth\AuthController@getLogin');
