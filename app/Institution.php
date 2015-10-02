@@ -12,7 +12,12 @@ class Institution extends Model
          'name',
          'description',
          'contactno',
-         'logo'
+         'logo',
+         'admin_id'
          ];
      
+     public function user()
+     {
+         return $this-hasOne('App\User');
+     }
 }

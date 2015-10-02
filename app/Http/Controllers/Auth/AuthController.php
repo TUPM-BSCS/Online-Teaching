@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use App\Institution;
+use App\Professor;
+use Input;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
@@ -41,37 +44,13 @@ class AuthController extends Controller
      * @param  array  $data
      * @return \Illuminate\Contracts\Validation\Validator
      */
-    protected function validator(array $data)
-    {
-        return Validator::make($data, [
-            'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|confirmed|min:6',
-        ]);
-    }
-
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return User
-     */
-    protected function create(array $data)
-    {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-            'role_id' => $data['role_id'],
-        ]);
-    }
     
-    public function getLogin($id) {
+    public function getLogin($id) { 
         switch($id){
-            case 'main_admin':
+            case 'main-admin':
                 $role = 1;
                 break;
-            case 'institution_admin':
+            case 'institution':
                 $role = 2;
                 break;
             case 'professor':
@@ -87,12 +66,15 @@ class AuthController extends Controller
     }
     
     public function getRegister($id){
+        $institutions = Institution::all();
         switch($id){
-            case 'institution_admin':
+            case 'institution':
                 $role = 2;
+                $page ='auth.inst_register';
                 break;
             case 'professor':
                 $role =3;
+                $page = 'auth.prof_register';
                 break;
             case 'student':
                 $role =4;
@@ -100,7 +82,7 @@ class AuthController extends Controller
             default:
                 return abort(404);
         }
-        return view('auth.register', compact('role'));
+        return view($page, compact('role', 'institutions'));
     }
     
     public function postLogin(Request $request, $role)
@@ -124,7 +106,7 @@ class AuthController extends Controller
         
         switch($role){
             case 1:
-                $page = 'main_admin';
+                $page = 'main-admin';
                 break;
             case 2:
                 $page = 'institution';
@@ -148,43 +130,132 @@ class AuthController extends Controller
             $this->incrementLoginAttempts($request);
         }
 
-        return redirect('/auth/login/'.$page)
+        return redirect('/login/'.$page)
             ->withInput($request->only($this->loginUsername(), 'remember'))
             ->withErrors([
                 $this->loginUsername() => $this->getFailedLoginMessage(),
             ]);
     }
     
-    public function postRegister(Request $request, $role)
+    protected function institution_validator(array $data)
     {
-        $validator = $this->validator($request->all());
+        return Validator::make($data, [
+            'name' => 'required|max:255|unique:institutions',
+            'description' => 'required',
+            'contact'=> 'required|digits:7',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|confirmed|min:6',
+            'password_confirmation' => 'required|min:6'
+        ]);
+    }
+    
+    protected function professor_validator(array $data)
+    {
+        return Validator::make($data, [
+            'firstname' => 'required|max:255',
+            'lastname' => 'required|max:255',
+            'about' => 'required',
+            'institution'=> 'required|max:255|exists:institutions,name',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|confirmed|min:6',
+            'password_confirmation' => 'required|min:6'
+        ]);
+    }
 
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return User
+     */
+    protected function create_user(array $data)
+    {
+        return User::create([
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+            'role_id' => $data['role_id'],
+        ]);
+    }
+    
+    protected function create_institution(array $data)
+    {
+        return Institution::create([
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'logo' => $data['logo'],
+            'contactno' => $data['contact'],
+            'admin_id'=> $data['admin_id']
+        ]);
+    }
+    
+    protected function create_professor(array $data)
+    {
+        return Professor::create([
+            'firstname' => $data['firstname'],
+            'lastname' => $data['lastname'],
+            'description' => $data['about'],
+            'image' => $data['image'],
+            'inst_id' => $data['inst_id'],
+            'user_id' => $data['user_id']
+        ]);
+    }
+    
+    public function postInstRegister(Request $request)
+    {
+        $validator = $this->institution_validator($request->all());
+        
         if ($validator->fails()) {
             $this->throwValidationException(
                 $request, $validator
             );
         }
         
-        if($role==4){
-            $user = $this->create($request->all());
-            $user->is_verified = true;
-            $user->save();
-            Auth::login($user);
-            return redirect('student');
-        }
-        else{
-            if($role==2){
-                $user = $this->create($request->all());
-                return redirect('thankyou');
-            }
-            else{
-                $user = $this->create($request->all());
-                return redirect('thankyou');
-            }
-        }
         
-
+        $user = $this->create_user($request->all());
+        $user->role_id = 2;
+        $user->save();
+        
+        $credentials = $request->all();
+        $credentials['admin_id'] = $user->id;
+        $institution = $this->create_institution($credentials);
+        
+        $imageName = $institution->id.'.'.Input::file('logo')->getClientOriginalExtension();
+        Input::file('logo')->move(base_path().'/public/images/institution/', $imageName);
+        
+        $institution->logo = $imageName."";
+        $institution->save();
+        
+        return redirect('thankyou');
         
     }
     
+    public function postProfRegister(Request $request)
+    {
+        $validator = $this->professor_validator($request->all());
+        
+        if ($validator->fails()) {
+            $this->throwValidationException(
+                $request, $validator
+            );
+        }
+        
+        $user = $this->create_user($request->all());
+        $user->role_id = 3;
+        $user->save();
+        
+        $credentials = $request->all();
+        $credentials['user_id'] = $user->id;
+        $institution = Institution::where('name', $request->institution)->first();        
+        $credentials['inst_id'] = $institution->id;
+        $professor = $this->create_professor($credentials);
+        
+        $imageName = $professor->id.'.'.Input::file('image')->getClientOriginalExtension();
+        Input::file('image')->move(base_path().'/public/images/professor/', $imageName);
+        
+        $institution->logo = $imageName."";
+        $institution->save();
+        
+        return redirect('thankyou');
+    }
+   
 }

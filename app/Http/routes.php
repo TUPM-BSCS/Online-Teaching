@@ -16,18 +16,22 @@ Route::get('/', function(){
 	return 'home';
 });
 
-Route::resource('main_admin', 'MainAdminController');
+Route::resource('main-admin', 'MainAdminController');
 Route::resource('institution', 'InstitutionController');
 
-Route::post('main_admin/change/{field}', 'MainAdminController@change');
-Route::post('main_admin/accept', 'MainAdminController@accept');
-Route::post('main_admin/decline', 'MainAdminController@decline');
+Route::post('user/change/{user_param}', 'UserController@change');
+Route::post('main_admin/accept', 'MainAdminController@accept_inst');
+Route::post('main_admin/decline', 'MainAdminController@decline_inst');
+
+Route::post('institution/accept', 'InstitutionController@accept_prof');
+Route::post('institution/decline', 'InstitutionController@decline_prof');
 
 // Authentication routes...
-Route::get('auth/login/{id}', 'Auth\AuthController@getLogin');
-Route::post('auth/login/{id}', 'Auth\AuthController@postLogin');
-Route::get('auth/logout', 'Auth\AuthController@getLogout');
+Route::get('login/{id}', 'Auth\AuthController@getLogin');
+Route::post('login/{id}', 'Auth\AuthController@postLogin');
+Route::get('logout', 'Auth\AuthController@getLogout');
 
 // Registration routes...
-Route::get('auth/register/{id}', 'Auth\AuthController@getRegister');
-Route::post('auth/register/{role}', 'Auth\AuthController@postRegister');
+Route::get('register/{id}', 'Auth\AuthController@getRegister');
+Route::post('register/institution', 'Auth\AuthController@postInstRegister');
+Route::post('register/professor', 'Auth\AuthController@postProfRegister');

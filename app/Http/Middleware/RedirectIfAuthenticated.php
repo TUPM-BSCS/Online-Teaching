@@ -38,10 +38,10 @@ class RedirectIfAuthenticated
             $role = $this->auth->user()->role_id;
             switch($role){
                 case 1:
-                    return redirect('main_admin/');
+                    return redirect('main-admin/');
                     break;
                 case 2:
-                    return redirect('institution_admin/');
+                    return redirect('institution/');
                     break;
                 case 3:
                     return redirect('professor/');

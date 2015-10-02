@@ -14,6 +14,9 @@
     <!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
+    <!-- Custom CSS -->
+	<link href="{!! asset('css/form.css') !!}" rel="stylesheet">
+    
     <!-- Custom Fonts -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet" type="text/css">
@@ -31,7 +34,7 @@
 
     <div id="wrapper">
         <div id="page-wrapper">
-            <div class="container-fluid source-sans">
+            <div class="container-fluid">
                 @yield('content')   
             </div>
             <!-- /.container-fluid -->

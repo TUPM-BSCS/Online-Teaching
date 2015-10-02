@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProfessorsTable extends Migration
+class CreateCourseTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,18 +12,19 @@ class CreateProfessorsTable extends Migration
      */
     public function up()
     {
-        Schema::create('professors', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('inst_id')->unsigned();
-            $table->integer('user_id')->unsigned();
-            $table->string('firstname');
-            $table->string('lastname');
-            $table->string('image');
+            $table->integer('category_id')->unsigned();
+            $table->string('name');
             $table->text('description');
+            $table->text('image');
             $table->timestamps();
             
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('inst_id')->references('id')->on('institutions')->onDelete('cascade');
+            $table->foreign('category_id')->references('id')->on('course_category')->onDelete('cascade');
+            
+            
         });
     }
 
@@ -34,6 +35,6 @@ class CreateProfessorsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('professors');
+        Schema::drop('courses');
     }
 }

@@ -1,7 +1,11 @@
 @extends('admin')
 
 @section('navbar')
-	@include('main_admin.navbar')
+	@if($is_mainadmin)
+		@include('main_admin.navbar')
+	@else
+		@include('inst_admin.navbar')
+	@endif
 @stop
 
 @section('content')
@@ -41,7 +45,7 @@
 							</div>
 						@endif
 					@endif
-					<form class="form-horizontal" role="form" method="POST" action="{{ url('/main_admin/change/email') }}">
+					<form class="form-horizontal" role="form" method="POST" action="{{ url('/user/change/email') }}">
 						<input type="hidden" name="_token" value="{{ csrf_token() }}">
 						
 						<div class="form-group">
@@ -92,7 +96,7 @@
 						@endif
 					@endif
 				
-				<form class="form-horizontal" role="form" method="POST" action="{{ url('main_admin/change/password') }}">
+				<form class="form-horizontal" role="form" method="POST" action="{{ url('user/change/password') }}">
 						<input type="hidden" name="_token" value="{{ csrf_token() }}">
 						<div class="form-group">
 							<label class="col-md-4 control-label">Current Password</label>
